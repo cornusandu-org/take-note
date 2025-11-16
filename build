@@ -1,0 +1,35 @@
+#!/usr/bin/bash
+
+RED="\e[0;31m"
+GREEN="\e[0;32m"
+RESET="\e[0m"
+
+func_conf() {
+    ./configure --enable-utf8 --enable-color --enable-color
+}
+
+func_regenconf() {
+    rm -rf autom4te.cache
+    autoreconf -fi
+}
+
+cd ./nano
+./autogen.sh
+{
+    func_conf
+} || {
+    echo -e "\n\n${RED}------ Failed to configure, trying again.. ------${RESET}\n\n"
+    {
+        func_regenconf;
+        func_conf;
+    } || {
+        echo -e "\n\n${RED}!!  Failed to configure repeatedly. Please try again later."
+        exit;
+    }
+}
+
+echo -e "\n\n\n${GREEN}------ Building ------${RESET}\n\n\n"
+
+make -j$(nproc)
+
+cd ..
